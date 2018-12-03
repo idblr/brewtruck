@@ -5,8 +5,8 @@
 # Created by: Ian Buller (@idblr)
 # Created on: November 26, 2018
 #
-# Modified by:
-# Modified on:
+# Most recently modified by: Ian Buller
+# Most recently modified on: December 3, 2018
 #
 # Notes:
 # A) Using RSelenium package
@@ -18,6 +18,8 @@
 # D) Expansions:
 #     1) Golden City Brewing
 #     2) Shiny web application
+# E) Recent modifications
+#     1) Added functionality for duplicate events at Holidaily Brewing
 ###############################################
 
 ## Packages
@@ -51,6 +53,7 @@ while(is.null(brew_cal)){
 ccb <- sub(".*\n", "", brew_cal$getElementText())
 time_ccb <- gsub(" .*$", "", ccb)
 truck_ccb <- gsub("^\\S+\\s+", "", ccb)
+truck_time_ccb <- paste(truck_ccb, " at ", time_ccb, "m", sep = "")
 
 # Holidaily
 # NOT PERFECT BECAUSE
@@ -58,16 +61,31 @@ truck_ccb <- gsub("^\\S+\\s+", "", ccb)
 # Somehow pick the correct <tr> that is a food truck
 today_hb <- "https://holidailybrewing.com/calendar/"
 remDr$navigate(today_hb)
-brew_cal <- NULL
-while(is.null(brew_cal)){
-  brew_cal <- tryCatch({remDr$findElement(using = "xpath", '//table[thead/tr/td[contains(concat( " ", @class, " " ), concat( " ", "fc-today", " " ))]]/tbody/tr[1]/td[count(//table/thead/tr/td[contains(concat( " ", @class, " " ), concat( " ", "fc-today", " " ))])+1]')},
+brew_cal1 <- NULL
+while(is.null(brew_cal1)){
+  brew_cal1 <- tryCatch({remDr$findElement(using = "xpath", '//table[thead/tr/td[contains(concat( " ", @class, " " ), concat( " ", "fc-today", " " ))]]/tbody/tr[1]/td[count(//table/thead/tr/td[contains(concat( " ", @class, " " ), concat( " ", "fc-today", " " ))])+1]')},
+                       error = function(e){NULL})
+  #loop until element with name <value> is found in <webpage url>
+}
+brew_cal2 <- NULL
+while(is.null(brew_cal2)){
+  brew_cal2 <- tryCatch({remDr$findElement(using = "xpath", '//table[thead/tr/td[contains(concat( " ", @class, " " ), concat( " ", "fc-today", " " ))]]/tbody/tr[1]/td[count(//table/thead/tr/td[contains(concat( " ", @class, " " ), concat( " ", "fc-today", " " ))])+1]')},
                        error = function(e){NULL})
   #loop until element with name <value> is found in <webpage url>
 }
 #brew_cal <- remDr$findElement(using = "xpath", '//table[thead/tr/td[contains(concat( " ", @class, " " ), concat( " ", "fc-today", " " ))]]/tbody/tr/td[count(//table/thead/tr/td[contains(concat( " ", @class, " " ), concat( " ", "fc-today", " " ))])]')
-hb <- sub(".*\n", "", brew_cal$getElementText())
-time_hb <- gsub(" .*$", "", hb)
-truck_hb <- gsub("^\\S+\\s+", "", hb)
+hb1 <- sub(".*\n", "", brew_cal1$getElementText())
+time_hb1 <- gsub(" .*$", "", hb1)
+truck_hb1 <- gsub("^\\S+\\s+", "", hb1)
+hb2 <- sub(".*\n", "", brew_cal2$getElementText())
+time_hb2 <- gsub(" .*$", "", hb2)
+truck_hb2 <- gsub("^\\S+\\s+", "", hb2)
+ifelse(truck_hb1 == truck_hb2, truck_hb2 <- NA, truck_hb2)
+ifelse(is.na(truck_hb2), time_hb2 <- NA, time_hb2)
+ifelse(is.na(truck_hb2), 
+       truck_time_hb <- paste(truck_hb1, " at ", time_hb1, "m", sep = ""),
+       truck_time_hb <- paste(truck_hb1, " at ", time_hb1, "m and ", truck_hb1, " at ", time_hb1, "m", sep = "")
+       )
 
 # Mountain Toad          
 today_mtb <- paste("http://mountaintoadbrewing.com/events/?view=calendar&month=",today[2],"-",today[3], sep = "")
@@ -81,6 +99,7 @@ while(is.null(brew_cal)){
 mtb <- sub(".*\n", "", brew_cal$getElementText())
 time_mtb <- gsub(" .*$", "", mtb)
 truck_mtb <- gsub("^\\S+\\s+", "", mtb)
+truck_time_mtb <- paste(truck_mtb, " at ", time_mtb, "m", sep = "")
 
 # New Terrain
 today_ntb <- "http://newterrainbrewing.com/food-truck-schedule/"
@@ -95,13 +114,15 @@ while(is.null(brew_cal)){
 ntb <- sub(".*\n", "", brew_cal$getElementText())
 time_ntb <- gsub(" .*$", "", ntb)
 truck_ntb <- gsub("^\\S+\\s+", "", ntb)
+truck_time_ntb <- paste(truck_ntb, " at ", time_ntb, "m", sep = "")
 
 ## Compile
-golden_breweries <- as.data.frame(cbind(golden, c(truck_ccb, truck_hb, truck_mtb, truck_ntb), c(time_ccb, time_hb, time_mtb, time_ntb)))
-names(golden_breweries) <- c("Brewery", "Food Truck", "Opening")
+golden_breweries <- as.data.frame(cbind(golden, c(truck_time_ccb, truck_time_hb, truck_time_mtb, truck_time_ntb)))
+names(golden_breweries) <- c("Brewery", "Food Truck(s)")
 golden_breweries
 
 ## Close remote driver
+rD$server$stop()
 remDr$close()
 remDr$server$stop()
 remDr$close()
