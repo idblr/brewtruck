@@ -27,7 +27,7 @@ library(RSelenium)
 
 ## Load remote driver
 rD <- rsDriver() # runs a chrome browser, wait for necessary files to download
-remDr <- rD$client 
+remDr <- rD$client
 
 ## Short list of breweries in Golden, Colorado with regular food trucks
 golden <- c("Cannonball Creek Brewing", "Holidaily Brewing", "Mountain Toad Brewing", "New Terrain Brewing")
@@ -123,8 +123,6 @@ golden_breweries
 
 ## Close remote driver
 rD$server$stop()
-remDr$close()
-remDr$server$stop()
 remDr$close()
 rm(remDr)
 gc()
