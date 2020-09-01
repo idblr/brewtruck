@@ -34,7 +34,7 @@ golden <- c("Cannonball Creek Brewing", "Holidaily Brewing", "Mountain Toad Brew
 
 ## Today's date
 # For some websites
-today <- c(format(Sys.time(), "%d"), format(Sys.time(), "%B"), format(Sys.time(), "%Y"))
+today <- c(format(Sys.time(), "%d"), format(Sys.time(), "%m"), format(Sys.time(), "%Y"))
 
 ## Web scrape 
 # As of 11.25.18 CCB, MTB, and NTB use Square Space for their calendars
@@ -59,7 +59,7 @@ truck_time_ccb <- paste(truck_ccb, " at ", time_ccb, "m", sep = "")
 # NOT PERFECT BECAUSE
 # Food truck is not always first event listed on calendar
 # Somehow pick the correct <tr> that is a food truck
-today_hb <- "https://holidailybrewing.com/calendar/"
+today_hb <- "https://holidailybrewing.com/taproom/"
 remDr$navigate(today_hb)
 brew_cal1 <- NULL
 while(is.null(brew_cal1)){
